@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Dry-run with all inputs
+        id: full
+        uses: ./
+        with:
+          key: pinglet_test_key
+          topic: acme/ci
+          title: "CI smoke test"
+          message: "hello from CI"
+          level: success
+          priority: normal
+          badges: '{"env":"ci"}'
+          data: '{"run":"smoke"}'
+          dry-run: "true"
+
+      - name: Assert payload shape
+        env:
+          PAYLOAD: ${{ steps.full.outputs.response }}
+        run: |
+          set -euo pipefail
+          echo "$PAYLOAD" | jq -e '
+            .message == "hello from CI" and
+            .title == "CI smoke test" and
+            .level == "success" and
+            .priority == "normal" and
+            .badges.env == "ci" and
+            .data.run == "smoke"'
+
+      - name: Dry-run with minimal inputs
+        id: minimal
+        uses: ./
+        with:
+          key: pinglet_test_key
+          topic: acme/ci
+          message: "minimal"
+          dry-run: "true"
+
+      - name: Assert minimal payload omits optional fields
+        env:
+          PAYLOAD: ${{ steps.minimal.outputs.response }}
+        run: |
+          set -euo pipefail
+          echo "$PAYLOAD" | jq -e '. == {"message":"minimal"}'
+
+      - name: Rejects a topic without a namespace
+        id: badtopic
+        continue-on-error: true
+        uses: ./
+        with:
+          key: pinglet_test_key
+          topic: no-namespace
+          message: "should fail"
+          dry-run: "true"
+
+      - name: Assert bad topic failed
+        run: |
+          [ "${{ steps.badtopic.outcome }}" = "failure" ]
