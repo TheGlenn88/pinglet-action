@@ -1,5 +1,7 @@
 # Pinglet Notify
 
+[![GitHub Marketplace](https://img.shields.io/badge/Marketplace-Pinglet%20Notify-blue?logo=github)](https://github.com/marketplace/actions/pinglet-notify)
+
 Send a push notification to a [Pinglet](https://pinglet.dev) topic from any GitHub Actions workflow: deploy results, CI failures, release announcements, straight to your phone. No SDK, no app config in the workflow; one step.
 
 Anyone who should receive the alerts just opens your topic's share link in the [Pinglet app](https://pinglet.dev). No account needed to receive.
